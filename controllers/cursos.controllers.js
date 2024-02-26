@@ -5,7 +5,7 @@ import {uploadImageCursos} from "../libs/cloudinary.js"
 
 export const getCursos = async (req, res) => {
     try {
-        const cursos = await Curso.find();
+        const cursos = await Curso.find().populate("ruta").populate("modulos");
         res.json(cursos);
     } catch (error) {
         return res.status(500).json({ message: error.message });
@@ -13,7 +13,7 @@ export const getCursos = async (req, res) => {
 }
 export const createCurso = async(req, res) => {
     try{
-        const { nombreCurso, categoria, profesor, duracion } = req.body;
+        const { nombreCurso, filtro, profesor, duracion } = req.body;
         let imagen;
 
         if(req.files?.imagen){
@@ -31,7 +31,7 @@ export const createCurso = async(req, res) => {
 
         const newCurso = new Curso({
             nombreCurso,
-            categoria,
+            filtro,
             profesor,
             duracion,
             imagen
@@ -80,4 +80,26 @@ export const getCurso = async(req, res) => {
         return res.status(500).json({message: error.message})
     }
 
+}
+export const AsignarRuta = async(req, res) => {
+    const { id } = req.params;
+    const { ruta } = req.body;
+    try{
+        const updateCursoRuta = await Curso.findByIdAndUpdate(id,{$push: { ruta }},{new: true})
+        return res.json(updateCursoRuta)
+    }catch(error){
+        console.log(error.message)
+        return res.status(500).json({message: error.message})
+    }
+} 
+export const AsignarModulo = async(req, res) =>{
+    const { id } = req.params;
+    const { modulos } = req.body;
+    try{ 
+        const updateCursoModulo = await Curso.findByIdAndUpdate(id,{$push: { modulos }},{new: true})
+        return res.json(updateCursoModulo)  
+    }catch(error){
+        console.log(error.message)
+        return res.status(500).json({message: error.message})
+    }
 }

@@ -2,7 +2,7 @@ import Modulo from "../models/Modulo.js";
 
 export const getModulos = async (req, res) => {
     try {
-        const modulos = await Modulo.find();
+        const modulos = await Modulo.find().populate("curso");
         res.json(modulos);
     } catch (error) {
         return res.status(500).json({ message: error.message });

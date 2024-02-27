@@ -5,7 +5,7 @@ import {uploadImageCursos} from "../libs/cloudinary.js"
 
 export const getCursos = async (req, res) => {
     try {
-        const cursos = await Curso.find().populate("ruta").populate("modulos");
+        const cursos = await Curso.find().populate("modulos").populate("ruta");
         res.json(cursos);
     } catch (error) {
         return res.status(500).json({ message: error.message });

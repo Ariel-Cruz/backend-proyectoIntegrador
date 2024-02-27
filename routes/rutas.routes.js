@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createRuta, deleteRuta, getRuta, getRutas, updateRuta } from "../controllers/rutas.controllers.js";
+import { AsignarCurso, QuitarCurso, createRuta, deleteRuta, getRuta, getRutas, updateRuta } from "../controllers/rutas.controllers.js";
 
 const router = Router();
 //rutas
@@ -13,5 +13,10 @@ router.delete("/rutas/:id", deleteRuta)
 
 router.get("/rutas/:id", getRuta)
 
+//asignar curso a ruta
+router.put("/asignar-curso/:id", AsignarCurso )
+
+//eliminar curso de ruta
+router.delete("/eliminar-curso/:id", QuitarCurso )
 
 export default router;

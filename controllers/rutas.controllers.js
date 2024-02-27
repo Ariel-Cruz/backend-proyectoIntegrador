@@ -2,7 +2,7 @@ import Ruta from "../models/Ruta.js";
 
 export const getRutas = async (req, res) => {
     try {
-        const rutas = await Ruta.find();
+        const rutas = await Ruta.find().populate("curso");
         res.json(rutas);
     } catch (error) {
         return res.status(500).json({ message: error.message });
@@ -53,4 +53,25 @@ export const getRuta = async(req, res)=>{
         console.log(error.message)
     }
 }
-
+export const AsignarCurso = async(req, res) =>{
+    const { id } = req.params;
+    const { curso } = req.body;
+    try{ 
+        const updateRutaCurso = await Ruta.findByIdAndUpdate(id,{$push: { curso }},{new: true})
+        return res.json(updateRutaCurso)  
+    }catch(error){
+        console.log(error.message)
+        return res.status(500).json({message: error.message})
+    }
+}
+//VERFIFICAR SI FUNCIONAAAAAAAAAAA
+export const QuitarCurso = async(req, res) =>{
+    const { id } = req.params;
+    try{ 
+        const QuitarCurso = await Ruta.findByIdAndDelete(id)
+        return res.json(QuitarCurso)  
+    }catch(error){
+        console.log(error.message)
+        return res.status(500).json({message: error.message})
+    }
+}

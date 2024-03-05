@@ -1,3 +1,5 @@
+import { uploadCertficadosRuta } from "../libs/cloudinary.js";
+
 import Ruta from "../models/Ruta.js";
 
 export const getRutas = async (req, res) => {
@@ -11,11 +13,13 @@ export const getRutas = async (req, res) => {
 
 export const createRuta = async (req, res) => {
     try {
-        const { nombreRuta, curso } = req.body;
+        const { nombreRuta,descripcion, curso, certificado } = req.body;
 
         const newRuta = new Ruta({
             nombreRuta,
-            curso
+            descripcion,
+            curso, 
+            certificado
         });
         await newRuta.save();
         return res.json(newRuta);
@@ -79,23 +83,63 @@ export const QuitarCurso = async (req, res) => {
             return res.status(404).json({ message: "La ruta no fue encontrada." });
         }
 
-        // Encuentra el índice del curso dentro de la ruta por su ID
-        const cursoIndex = ruta.curso.findIndex(cursoId => cursoId.toString() === curso.toString());
-
-        // Verifica si el curso existe dentro de la ruta
-        if (cursoIndex === -1) {
+        // Verifica si el curso está asociado a esta ruta
+        if (!ruta.curso.includes(curso)) {
             return res.status(404).json({ message: "El curso no está asociado a esta ruta." });
         }
 
         // Quita el curso del arreglo de cursos de la ruta
-        ruta.curso.splice(cursoIndex, 1);
+        ruta.curso = ruta.curso.filter(cursoId => cursoId.toString() !== curso.toString());
 
         // Guarda la ruta actualizada en la base de datos
         const rutaActualizada = await ruta.save();
-
-        return res.json(rutaActualizada);
+        const rutaActualizadaAmpliada = await Ruta.findById(rutaActualizada._id).populate("curso");
+        //const rutaActualizada = await Ruta.findById(rutaActualizada._id).populate("curso");
+        return res.json(rutaActualizadaAmpliada);
     } catch (error) {
-        console.log(error.message);
+        console.error(error.message);
         return res.status(500).json({ message: "Ocurrió un error al intentar quitar el curso de la ruta." });
+    }
+};
+
+// Agrega un certificado
+export const agregarCertificado = async(req, res) =>{
+    try {
+        const { id } = req.params;
+        let certificado;
+
+        // Verifica si se ha proporcionado un archivo de certificado en la solicitud
+        if(req.files?.certificado){
+            // Sube el certificado a Cloudinary
+            const result = await uploadCertficadosRuta(req.files.certificado.tempFilePath);
+            
+            // Elimina el archivo temporal del servidor
+            await fs.remove(req.files.certificado.tempFilePath);
+
+            // Crea un objeto de certificado con la URL y el ID público proporcionados por Cloudinary
+            certificado = { url: result.secure_url, public_id: result.public_id };
+            
+            // Encuentra la ruta por su ID
+            const ruta = await Ruta.findById(id);
+
+            // Verifica si la ruta existe
+            if (!ruta) {
+                return res.status(404).json({ message: "La ruta no fue encontrada." });
+            }
+
+            // Agrega el certificado a la ruta
+            ruta.certificado = certificado;
+
+            // Guarda la ruta actualizada en la base de datos
+            const rutaActualizada = await ruta.save();
+            
+            // Devuelve la ruta actualizada con el certificado
+            return res.json(rutaActualizada);
+        } else {
+            return res.status(400).json({ message: "No se proporcionó ningún archivo de certificado." });
+        }
+    } catch(error) {
+        console.error(error.message);
+        return res.status(500).json({ message: "Ocurrió un error al intentar agregar el certificado a la ruta." });
     }
 };

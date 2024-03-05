@@ -13,3 +13,10 @@ export const uploadImageCursos = async filePath => {
 export const deleteImage = async id => {
     cloudinary.uploader.destroy(id)
 }
+
+//Certificador
+export const uploadCertficadosRuta = async filePath => {
+    return await cloudinary.uploader.upload(filePath, {
+        folder: 'certificados'
+    });
+}

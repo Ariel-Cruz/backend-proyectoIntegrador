@@ -1,6 +1,7 @@
 import { uploadCertficadosRuta } from "../libs/cloudinary.js";
-
+import fs from "fs-extra";
 import Ruta from "../models/Ruta.js";
+import { deleteCertificado } from "../libs/cloudinary.js";
 
 export const getRutas = async (req, res) => {
     try {
@@ -13,7 +14,17 @@ export const getRutas = async (req, res) => {
 
 export const createRuta = async (req, res) => {
     try {
-        const { nombreRuta,descripcion, curso, certificado } = req.body;
+        const { nombreRuta,descripcion, curso } = req.body;
+        let certificado;
+        if (req.files?.certificado) {
+            const result = await uploadCertficadosRuta(req.files.certificado.tempFilePath);
+            await fs.remove(req.files.certificado.tempFilePath);
+            console.log(result);
+            certificado = {
+                url: result.secure_url,
+                public_id: result.public_id,
+            }
+        }
 
         const newRuta = new Ruta({
             nombreRuta,
@@ -34,6 +45,7 @@ export const updateRuta = async(req, res) =>{
     try{
         const updateRuta = await Ruta.findByIdAndUpdate(req.params.id, req.body, {new: true})
         console.log(updateRuta)
+        return  res.send("actualizando ruta")
     }catch(error){
         console.log(error.message)
     }
@@ -42,8 +54,12 @@ export const deleteRuta = async(req, res)=>{
     try{
         const deleteRuta = await Ruta.findByIdAndDelete(req.params.id)
         if(!deleteRuta) return res.sendStatus(404)
-        return res.sendStatus(204)
 
+        
+        if(deleteRuta.certificado.public_id){
+            await deleteCertificado(deleteRuta.certificado.public_id)
+        }
+        return res.sendStatus(204)
     }catch(error){
         console.log(error.message)
     }

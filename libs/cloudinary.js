@@ -14,9 +14,12 @@ export const deleteImage = async id => {
     cloudinary.uploader.destroy(id)
 }
 
-//Certificador
+//Certificado
 export const uploadCertficadosRuta = async filePath => {
     return await cloudinary.uploader.upload(filePath, {
         folder: 'certificados'
     });
+}
+export const deleteCertificado = async id => {
+    cloudinary.uploader.destroy(id)
 }

@@ -62,7 +62,7 @@ export const deleteCurso = async(req, res) => {
 
         if(cursoRemoved.imagen.public_id){
             await deleteImage(cursoRemoved.imagen.public_id)
-        }        await deleteImage(cursoRemoved.imagen.public_id)
+        }  
 
         return res.sendStatus(204)
     }catch(error){
